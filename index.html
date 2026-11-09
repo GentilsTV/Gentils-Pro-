@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gentils Pro - Pronostics Sportifs</title>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --card-bg: #131b2e;
+            --card-border: #1e293b;
+            --accent-green: #00e676;
+            --gold: #ffb300;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding-bottom: 90px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #131b2e 0%, #0f172a 100%);
+            border-bottom: 1px solid var(--card-border);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            color: #fff;
+        }
+
+        .logo span {
+            color: var(--accent-green);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge.free { background: #334155; color: #cbd5e1; }
+        .badge.vip { background: var(--gold); color: #000; box-shadow: 0 0 10px rgba(255, 179, 0, 0.4); }
+
+        /* Main Container */
+        main {
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Sélecteur de mois & Filtres Sports élargis */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .month-select {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .sports-filters {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+        .sports-filters::-webkit-scrollbar { display: none; }
+
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn.active {
+            background: var(--accent-green);
+            color: #000;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 12px rgba(0, 230, 118, 0.3);
+        }
+
+        /* Cartes de Matchs */
+        .match-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .match-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0;
+            width: 4px;
+            background: var(--accent-green);
+        }
+
+        .match-card.vip-locked {
+            background: linear-gradient(145deg, #131b2e 0%, #1e1b18 100%);
+            border-color: rgba(255, 179, 0, 0.3);
+        }
+        .match-card.vip-locked::before {
+            background: var(--gold);
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .teams {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .tag.vip {
+            background: var(--gold);
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .prediction-preview {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            color: #cbd5e1;
+        }
+
+        .prediction-preview p strong {
+            color: var(--accent-green);
+        }
+
+        .blurred {
+            filter: blur(5px);
+            user-select: none;
+            color: var(--text-muted);
+        }
+
+        /* Boutons */
+        .btn-details, .btn-unlock, .btn-activate, .btn-wa-send {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+
+        .btn-details { background: #1e293b; color: #fff; border: 1px solid #334155; }
+        .btn-unlock { background: var(--gold); color: #000; box-shadow: 0 4px 15px rgba(255, 179, 0, 0.2); }
+        .btn-activate { background: var(--accent-green); color: #000; margin-top: 15px; }
+        .btn-wa-send { background: #25d366; color: #fff; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.2); }
+
+        /* Section VIP & Tarifs */
+        #vip-section p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .price-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            position: relative;
+        }
+
+        .price-card.featured {
+            border: 2px solid var(--gold);
+            background: linear-gradient(180deg, #131b2e 0%, #1a170e 100%);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: var(--gold);
+            color: #000;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .price {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--accent-green);
+            margin: 15px 0;
+        }
+
+        .price-card.featured .price {
+            color: var(--gold);
+        }
+
+        .price-card ul {
+            list-style: none;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .price-card ul li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .price-card ul li::before {
+            content: '✔';
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .btn-wave {
+            display: block;
+            background: #00b140;
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 15px rgba(0, 177, 64, 0.3);
+            text-align: center;
+        }
+
+        .activation-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 20px;
+            border-radius: 16px;
+        }
+
+        .activation-box h4 {
+            margin-bottom: 8px;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .activation-box input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: #0b0f19;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        /* Historique style */
+        .history-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        .history-card .result-win { color: var(--accent-green); font-weight: bold; }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: #0f172a;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .nav-item i {
+            font-size: 1.1rem;
+            margin-bottom: 3px;
+        }
+
+        .nav-item.active {
+            color: var(--accent-green);
+        }
+
+        .hidden-section { display: none; }
+        .active-section { display: block; }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .modal.hidden { display: none; }
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 25px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            color: #fff;
+        }
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo">GENTILS <span>PRO</span></div>
+        <div id="user-status-badge" class="badge free">Gratuit</div>
+    </header>
+
+    <!-- CONTAINER PRINCIPAL -->
+    <main id="app-container">
+        
+        <!-- SECTION ACCUEIL / MATCHS -->
+        <section id="matches-section" class="active-section">
+            
+            <div class="filter-bar">
+                <select id="month-selector" class="month-select" onchange="afficherMatchsFiltres()">
+                    <option value="nov">Novembre 2026</option>
+                    <option value="dec">Décembre 2026</option>
+                </select>
+            </div>
+
+            <!-- Filtres de sports élargis (Football, Basket, Tennis, Rugby, Combat) -->
+            <div class="sports-filters">
+                <button class="filter-btn active" onclick="filterSport('all', this)">Tous</button>
+                <button class="filter-btn" onclick="filterSport('football', this)"><i class="fa-solid fa-futbol"></i> Foot</button>
+                <button class="filter-btn" onclick="filterSport('basketball', this)"><i class="fa-solid fa-basketball"></i> Basket</button>
+                <button class="filter-btn" onclick="filterSport('tennis', this)"><i class="fa-solid fa-baseball"></i> Tennis</button>
+                <button class="filter-btn" onclick="filterSport('rugby', this)"><i class="fa-solid fa-football"></i> Rugby</button>
+                <button class="filter-btn" onclick="filterSport('combat', this)"><i class="fa-solid fa-hand-fist"></i> Boxe/MMA</button>
+            </div>
+
+            <h2>Calendrier & Pronostics</h2>
+            <div id="matches-list">
+                <p style="text-align: center; color: var(--text-muted); padding: 20px;">Chargement des matchs en cours...</p>
+            </div>
+        </section>
+
+        <!-- SECTION HISTORIQUE & CONSEILS -->
+        <section id="history-section" class="hidden-section">
+            <h2>Historique & Bilans des Pronostics 📊</h2>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">Consultez nos précédents succès et analyses validées.</p>
+            
+            <div id="history-list">
+                <div class="history-card">
+                    <div class="match-header"><span>La Liga • Récemment</span> <span class="result-win">GAGNÉ ✔</span></div>
+                    <div style="font-weight:bold; margin-bottom:5px;">Valencia vs Real Madrid</div>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">Prono : Victoire Real Madrid (Score 0-3)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION ABONNEMENT VIP -->
+        <section id="vip-section" class="hidden-section">
+            <h2>Passez au niveau supérieur 🔥</h2>
+            <p>Accédez à 100% de nos analyses expertes (buts, plus/moins, faits de match) multi-sports.</p>
+            
+            <div class="pricing-cards">
+                <div class="price-card">
+                    <h3>Pass Semaine</h3>
+                    <p class="price">3 500 FCFA</p>
+                    <ul>
+                        <li>Accès 7 jours</li>
+                        <li>Tous les sports inclus</li>
+                        <li>Canal VIP dédié</li>
+                    </ul>
+                    <a href="https://pay.wave.com/m/M_dQNxOa48-kSX/c/ci/?amount=3500" target="_blank" class="btn-wave">Payer avec Wave (3500f)</a>
+                </div>
+
+                <div class="price-card featured">
+                    <div class="popular-badge">Populaire</div>
+                    <h3>Pass Mois</h3>
+                    <p class="price">10 000 FCFA</p>
+                    <ul>
+                        <li>Accès 30 jours complets</li>
+                        <li>Meilleure économie</li>
+                        <li>Support prioritaire 24/7</li>
+                    </ul>
+                    <a href="https://pay.wave.com/m/M_dQNxOa48-kSX/c/ci/?amount=10000" target="_blank" class="btn-wave">Payer avec Wave (10000f)</a>
+                </div>
+            </div>
+
+            <div class="activation-box">
+                <h4>Vous avez déjà payé ?</h4>
+                <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 12px;">Envoyez votre capture par WhatsApp pour recevoir votre code VIP instantanément :</p>
+                
+                <a href="https://wa.me/2250574785813?text=Bonjour,%20voici%20ma%20capture%20de%20paiement%20Wave%20pour%20l'abonnement%20Gentils%20Pro.%20J'attends%20mon%20code%20VIP." target="_blank" class="btn-wa-send">
+                    <i class="fa-brands fa-whatsapp"></i> Envoyer ma capture sur WhatsApp
+                </a>
+
+                <input type="text" id="vip-code-input" placeholder="Entrez votre code VIP reçu ici...">
+                <button onclick="activateVipCode()" class="btn-activate">Activer mon accès VIP</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- NAVIGATION BASSE -->
+    <nav class="bottom-nav">
+        <button onclick="switchTab('matches')" class="nav-item active"><i class="fa-solid fa-house"></i> Accueil</button>
+        <button onclick="switchTab('history')" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Historique</button>
+        <button onclick="switchTab('vip')" class="nav-item"><i class="fa-solid fa-crown" style="color:var(--gold);"></i> VIP</button>
+        <button onclick="openWhatsApp()" class="nav-item"><i class="fa-brands fa-whatsapp" style="color:#00e676;"></i> Support</button>
+    </nav>
+
+    <!-- MODAL DETAILS MATCH -->
+    <div id="match-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h3 id="modal-title" style="margin-bottom: 15px; color:var(--accent-green);"></h3>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // Nouvelle URL d'API Google Apps Script mise à jour
+        const API_URL = "https://script.google.com/macros/s/AKfycbwU5f6oSu1bqOwJzZS03vwzspCZlhn2guDUycrzqeLspnQMY7yiPemGUvFvFKd7pjJ2/exec";
+        
+        let allMatchesData = [];
+
+        function switchTab(tab) {
+            document.getElementById('matches-section').className = tab === 'matches' ? 'active-section' : 'hidden-section';
+            document.getElementById('history-section').className = tab === 'history' ? 'active-section' : 'hidden-section';
+            document.getElementById('vip-section').className = tab === 'vip' ? 'active-section' : 'hidden-section';
+            
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if(tab === 'matches') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            if(tab === 'history') document.querySelectorAll('.nav-item')[1].classList.add('active');
+            if(tab === 'vip') document.querySelectorAll('.nav-item')[2].classList.add('active');
+        }
+
+        function showVipModal() {
+            switchTab('vip');
+        }
+
+        function openWhatsApp() {
+            window.open('https://wa.me/2250574785813?text=Bonjour,%20je%20souhaite%20valider%20mon%20abonnement%20VIP%20Gentils%20Pro%20avec%20ma%20capture%20Wave.', '_blank');
+        }
+
+        function openMatchDetails(title, analysis, prediction, isVip) {
+            let isUserVip = localStorage.getItem('gentils_vip') === 'true';
+            if(isVip && !isUserVip) {
+                alert("Ce pronostic est réservé aux abonnés VIP ! Veuillez prendre un abonnement.");
+                showVipModal();
+                return;
+            }
+            
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerHTML = `
+                <p style="margin-bottom: 12px; line-height: 1.5;"><strong>Analyse experte (Buts, Stats & Faits de match) :</strong><br>${analysis}</p>
+                <p style="color: var(--accent-green); font-weight: bold; font-size: 1.05rem; margin-top: 10px;">Conseil Prono : ${prediction}</p>
+            `;
+            document.getElementById('match-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('match-modal').classList.add('hidden');
+        }
+
+        async function chargerMatchs() {
+            const container = document.getElementById('matches-list');
+            container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 20px;">Chargement des matchs...</p>`;
+
+            try {
+                let response = await fetch(API_URL + "?action=get_matchs");
+                allMatchesData = await response.json();
+                afficherMatchsFiltres();
+            } catch (error) {
+                console.error("Erreur de chargement:", error);
+                container.innerHTML = `<p style="text-align: center; color: #ef4444; padding: 20px;">Erreur de connexion avec Google Sheets.</p>`;
+            }
+        }
+
+        function afficherMatchsFiltres() {
+            const container = document.getElementById('matches-list');
+            const activeSportBtn = document.querySelector('.sports-filters .filter-btn.active');
+            let selectedSport = activeSportBtn ? activeSportBtn.getAttribute('onclick').match(/'([^']+)'/)[1] : 'all';
+
+            container.innerHTML = "";
+
+            if (!allMatchesData || allMatchesData.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 20px;">Aucun match trouvé dans la base.</p>`;
+                return;
+            }
+
+            let filtered = allMatchesData.filter(match => {
+                let matchSport = (match.sport || "").toString().trim().toLowerCase();
+                let sportCorrespond = (selectedSport === 'all' || matchSport.includes(selectedSport));
+                return sportCorrespond;
+            });
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 20px;">Aucun match disponible pour ce sport.</p>`;
+                return;
+            }
+
+            let isUserVip = localStorage.getItem('gentils_vip') === 'true';
+
+            filtered.forEach(match => {
+                let estVipStr = (match.est_vip || "").toString().trim().toUpperCase();
+                let isVip = (estVipStr === "TRUE" || estVipStr === "VRAI" || estVipStr === "1");
+                
+                let card = document.createElement('div');
+                card.className = `match-card ${isVip && !isUserVip ? 'vip-locked' : ''}`;
+
+                card.innerHTML = `
+                    <div class="match-header">
+                        <span>${match.sport} • ${match.date_heure}</span>
+                        <span class="tag ${isVip ? 'vip' : 'free'}" ${!isVip ? 'style="background:#10b981; color:#000;"' : ''}>
+                            ${isVip ? '<i class="fa-solid fa-crown"></i> VIP' : 'Gratuit du Jour'}
+                        </span>
+                    </div>
+                    <div class="teams">
+                        <strong>${match.equipes}</strong>
+                    </div>
+                    <div class="prediction-preview ${isVip && !isUserVip ? 'blurred' : ''}">
+                        <p><strong>Pronostic :</strong> ${isVip && !isUserVip ? 'Pronostic ultra-sécurisé masqué (Réservé aux abonnés VIP)' : match.pronostic}</p>
+                    </div>
+                    ${isVip && !isUserVip ? 
+                        `<button class="btn-unlock" onclick="showVipModal()">🔓 Débloquer avec le Pass VIP</button>` :
+                        `<button class="btn-details" onclick="openMatchDetails('${match.equipes.replace(/'/g, "\\'")}', '${match.analyse.replace(/'/g, "\\'")}', '${match.pronostic.replace(/'/g, "\\'")}', ${isVip})">Voir l'analyse détaillée</button>`
+                    }
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterSport(sport, btnElement) {
+            document.querySelectorAll('.sports-filters .filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            afficherMatchsFiltres();
+        }
+
+        async function activateVipCode() {
+            const code = document.getElementById('vip-code-input').value.trim();
+            if(code.length < 3) {
+                alert("Veuillez entrer un code VIP valide.");
+                return;
+            }
+
+            try {
+                let response = await fetch(`${API_URL}?action=verifier_code&code=${encodeURIComponent(code)}`);
+                let result = await response.json();
+
+                if(result.status === "success") {
+                    localStorage.setItem('gentils_vip', 'true');
+                    document.getElementById('user-status-badge').innerText = "VIP Actif ⭐";
+                    document.getElementById('user-status-badge', className = "badge vip");
+                    alert("Félicitations ! " + result.message);
+                    switchTab('matches');
+                    afficherMatchsFiltres();
+                } else {
+                    alert(result.message || "Code VIP invalide ou expiré.");
+                }
+            } catch (error) {
+                alert("Erreur de connexion avec le serveur de validation.");
+            }
+        }
+
+        window.onload = function() {
+            if(localStorage.getItem('gentils_vip') === 'true') {
+                document.getElementById('user-status-badge').innerText = "VIP Actif ⭐";
+                document.getElementById('user-status-badge').className = "badge vip";
+            }
+            chargerMatchs();
+        }
+    </script>
+</body>
+</html>
